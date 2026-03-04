@@ -1,10 +1,11 @@
-# Code of Conduct
+## Davranış Kuralları (Code of Conduct)
 
-This project follows a simple standard:
-- be respectful
-- be constructive
-- focus on technical clarity
+Bu proje basit bir standardı takip eder:
 
-Unacceptable behavior includes harassment, hate speech, and personal attacks.
+* saygılı olun
+* yapıcı olun
+* teknik açıklık ve netliğe odaklanın
 
-Maintainers may remove content or contributors that violate this standard.
+Kabul edilemez davranışlar şunları içerir: taciz, nefret söylemi ve kişisel saldırılar.
+
+Bu kuralları ihlal eden içerikler veya katkıda bulunan kişiler proje yöneticileri tarafından kaldırılabilir.
