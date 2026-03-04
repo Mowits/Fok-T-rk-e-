@@ -13,7 +13,7 @@ FOK Modular is a Python-based, modular assistant stack focused on:
 This repository is now prepared for open-source use:
 - English documentation
 - English default prompts/messages
-- MIT License
+- Apache License 2.0
 - Contribution and security guidelines
 
 ## Quick Start (PC)
