@@ -1,22 +1,10 @@
-# FOK Modular (Motor-Free Assistant + Optional Stable Diffusion)
+# FOK Modular (Turkce Surum)
 
-FOK Modular is a Python-based, modular assistant stack focused on:
-- voice wake-word interaction (`fok`/`folk`)
-- reminders and medication routines
-- optional web-backed answers
-- optional face registration/recognition
-- optional image generation (Stable Diffusion)
-- Raspberry Pi microphone/speaker bridge
+FOK Modular; wake-word, STT/TTS, hatirlatici, ilac takibi ve opsiyonel Stable Diffusion gorsel uretimi iceren moduler bir asistan projesidir.
 
-## Open-Source Status
+Lisans: Apache License 2.0
 
-This repository is now prepared for open-source use:
-- English documentation
-- English default prompts/messages
-- Apache License 2.0
-- Contribution and security guidelines
-
-## Quick Start (PC)
+## Hizli Baslangic (PC)
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
@@ -24,98 +12,61 @@ cd /home/mowits/Downloads/fok_modular
 ./run_pc.sh
 ```
 
-## One-Command Full Stack (PC + Pi over SSH)
+## Tek Komut (PC + Pi)
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
-chmod +x run_all_pc_pi.sh
 ./run_all_pc_pi.sh start
 ```
 
-Management commands:
+Yonetim:
 - `./run_all_pc_pi.sh status`
 - `./run_all_pc_pi.sh logs`
 - `./run_all_pc_pi.sh live`
 - `./run_all_pc_pi.sh stop`
 - `./run_all_pc_pi.sh restart`
-- `./run_all_pc_pi.sh sd "prompt"` (SD only)
-- `./run_all_pc_pi.sh start "prompt"` (stack + SD)
+- `./run_all_pc_pi.sh sd "prompt"` (sadece gorsel)
 
-Optional environment variables:
-- `FOK_PI_HOST` (default: `192.168.1.111`)
-- `FOK_PI_USER` (default: `mowits`)
-- `FOK_PI_KEY` (default: `/home/mowits/Downloads/fok_pi_key`)
-- `FOK_PC_HOST` (default: auto-detected local IP)
-- `FOK_ENABLE_PHONE_BRIDGE` (default: `1`)
+## Sesli Komutlar
 
-## Voice Commands
-
-Wake word:
+Wake:
 - `fok`
 - `folk`
 
-Command examples:
-- `fok remind: doctor appointment; 2026-03-10 14:00`
-- `fok med: aspirin; 08:30`
-- `fok med_remove: aspirin`
-- `fok face_add: alice`
-- `fok profile: I am diabetic`
-- `fok image: red sports car at sunset`
-- `fok image create red sports car`
+Ornekler:
+- `fok hatirlat: doktor randevusu; 2026-03-10 14:00`
+- `fok ilac: aspirin; 08:30`
+- `fok ilac_sil: aspirin`
+- `fok yuz_kaydet: ali`
+- `fok profil: seker hastasiyim`
+- `fok gorsel: kirmizi spor araba`
+- `fok gorsel olustur kirmizi spor araba`
 
-Turkish aliases are still supported for compatibility:
-- `hatirlat`, `ilac`, `ilac_sil`, `yuz_kaydet`, `profil`, `gorsel/resim`
+## Stable Diffusion
 
-## Stable Diffusion (PC)
-
-Install:
+Kurulum:
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
-chmod +x install_pc_sd.sh
 ./install_pc_sd.sh
 ```
 
-Generate:
+Uretim:
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
-./run_sd.sh "red sports car, cinematic, high detail"
+./run_sd.sh "kirmizi spor araba, sinematik, detayli"
 ```
-
-By default:
-- LM Studio processes are paused before SD to reduce VRAM pressure.
-- Image output is saved under `outputs/sd/`.
-- `latest.png` is updated each run.
-
-Useful SD env vars:
-- `FOK_SD_MODEL`
-- `FOK_SD_STEPS`
-- `FOK_SD_CFG`
-- `FOK_SD_WIDTH`
-- `FOK_SD_HEIGHT`
-- `FOK_SD_OPEN_TARGET` (`pc|pi|both|none`)
-- `FOK_SD_PAUSE_LMSTUDIO` (`1|0`)
-- `FOK_LMSTUDIO_RESTART_CMD` (optional restart command after SD)
 
 Log:
 - `/tmp/fok_sd.log`
 
-## Modules
+Notlar:
+- SD calisirken VRAM bosaltmak icin LM Studio otomatik kapatilabilir.
+- Cikti dosyalari `outputs/sd/` altina kaydedilir.
 
-- `fok/config.py` configuration loading
-- `fok/db.py` SQLite schema setup
-- `fok/memory.py` long-term memory operations
-- `fok/reminders.py` reminders
-- `fok/meds.py` medication routines
-- `fok/vision.py` face recognition/registration
-- `fok/llm.py` LM Studio / OpenAI calls
-- `fok/web_search.py` optional web search
-- `fok/stt.py` local and remote STT integration
-- `fok/behavior.py` wake/session/dialog orchestration
+## Gelistirme
 
-## Notes
-
-- Motor control is intentionally out of scope.
-- Stable Diffusion is optional and PC-side.
-- OpenAI support requires `OPENAI_API_KEY`.
+Katki ve guvenlik:
+- `CONTRIBUTING.md`
+- `SECURITY.md`

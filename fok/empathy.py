@@ -2,9 +2,9 @@
 def empathic_response(user: str, text: str) -> str:
     t = text.lower()
     if any(k in t for k in ["tired", "exhausted", "sleepy", "yorgun", "bitkin", "uykusuz"]):
-        return f"{user}, would you like to rest a bit? I can also remind you to drink water."
+        return f"{user}, biraz dinlenmek ister misin? Istersen su icmeyi de hatirlatabilirim."
     if any(k in t for k in ["sad", "upset", "bad", "uzgun", "moralim bozuk", "kotu"]):
-        return f"{user}, I am sorry you feel this way. I am here for you. Want to try a short breathing exercise?"
+        return f"{user}, uzgun oldugunu duydum. Yanindayim. Kisa bir nefes egzersizi deneyelim mi?"
     if any(k in t for k in ["happy", "good", "great", "mutlu", "iyi", "harika"]):
-        return f"{user}, that is great to hear. Do you want me to do anything else for you today?"
-    return f"{user}, understood. How can I help you?"
+        return f"{user}, bu harika. Bugun baska ne yapmami istersin?"
+    return f"{user}, anladim. Sana nasil yardim edebilirim?"

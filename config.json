@@ -14,7 +14,7 @@
     "folk"
   ],
   "db_path": "fok_memory.db",
-  "default_user": "User",
+  "default_user": "Kullanici",
   "reminder_check_seconds": 15,
   "reminders_enabled": true,
   "meds_enabled": true,
