@@ -1,11 +1,12 @@
-# Security Policy
+## Güvenlik Politikası (Security Policy)
 
-If you discover a security issue, please do not open a public issue with exploit details.
+Eğer bir güvenlik açığı keşfederseniz, lütfen exploit (istismar) detaylarını içeren herkese açık bir issue açmayın.
 
-Report privately with:
-- impact summary
-- affected file(s)
-- reproduction steps
-- suggested fix (if available)
+Bunun yerine şu bilgilerle birlikte özel olarak bildirin:
 
-Until a private channel is defined, share a minimal disclosure note and request secure contact details.
+* etkinin kısa özeti
+* etkilenen dosya(lar)
+* yeniden üretme adımları
+* varsa önerilen çözüm
+
+Özel bir iletişim kanalı tanımlanana kadar, minimum düzeyde bilgi içeren bir bildirim paylaşın ve güvenli iletişim için iletişim bilgisi talep edin.
