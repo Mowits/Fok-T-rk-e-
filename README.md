@@ -1,4 +1,5 @@
 # FOK Modular (Turkce Surum)
+!AzerillaGTAG e destekleri için teşekkürler!
 
 FOK Modular; wake-word, STT/TTS, hatirlatici, ilac takibi ve opsiyonel Stable Diffusion gorsel uretimi iceren moduler bir asistan projesidir.
 
