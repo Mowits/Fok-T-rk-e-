@@ -71,3 +71,21 @@ Notlar:
 Katki ve guvenlik:
 - `CONTRIBUTING.md`
 - `SECURITY.md`
+
+## 🧠 Yerel LLM Desteği
+
+FOK, **yerel büyük dil modelleri (LLM)** ile çalışabilir. Bu sayede asistan tamamen **offline (internetsiz)** olarak da kullanılabilir.
+
+Kullanıcı istediği çalışma şeklini seçebilir:
+
+- **Offline modu ("mağara modu")** – tüm işlemler yerel olarak çalışır, internet kullanılmaz.
+- **Online modu** – gerektiğinde internetten bilgi çekebilir.
+
+Bu sayede kullanıcı **gizlilik** ile **güncel bilgi** arasında istediği dengeyi kurabilir.
+
+Özellikler:
+
+- Yerel LLM desteği
+- İsteğe bağlı internet erişimi
+- Gizlilik odaklı tasarım
+- Tamamen offline çalışabilme
