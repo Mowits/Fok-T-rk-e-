@@ -1,11 +1,12 @@
-# FOK Modular (Turkce Surum)
-!AzerillaGTAG e destekleri için teşekkürler!
+# FOK Modular (Türkçe Sürüm)
 
-FOK Modular; wake-word, STT/TTS, hatirlatici, ilac takibi ve opsiyonel Stable Diffusion gorsel uretimi iceren moduler bir asistan projesidir.
+AzerillaGTAG'e destekleri için teşekkürler.
+
+FOK Modular; uyandırma kelimesi, STT/TTS, hatırlatıcı, ilaç takibi ve isteğe bağlı Stable Diffusion görsel üretimi içeren modüler bir asistan projesidir.
 
 Lisans: Apache License 2.0
 
-## Hizli Baslangic (PC)
+## Hızlı Başlangıç (PC)
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
@@ -20,13 +21,13 @@ cd /home/mowits/Downloads/fok_modular
 ./run_all_pc_pi.sh start
 ```
 
-Yonetim:
+Yönetim:
 - `./run_all_pc_pi.sh status`
 - `./run_all_pc_pi.sh logs`
 - `./run_all_pc_pi.sh live`
 - `./run_all_pc_pi.sh stop`
 - `./run_all_pc_pi.sh restart`
-- `./run_all_pc_pi.sh sd "prompt"` (sadece gorsel)
+- `./run_all_pc_pi.sh sd "prompt"` (yalnızca görsel üretimi)
 
 ## Sesli Komutlar
 
@@ -34,7 +35,7 @@ Wake:
 - `fok`
 - `folk`
 
-Ornekler:
+Örnekler:
 - `fok hatirlat: doktor randevusu; 2026-03-10 14:00`
 - `fok ilac: aspirin; 08:30`
 - `fok ilac_sil: aspirin`
@@ -43,22 +44,22 @@ Ornekler:
 - `fok gorsel: kirmizi spor araba`
 - `fok gorsel olustur kirmizi spor araba`
 
-## Yuz Tanima + Servo Takip
+## Yüz Tanıma ve Servo Takibi
 
-`config.json` icinde:
+`config.json` içinde:
 - `"face_enabled": true`
 - `"servo_tracking_enabled": true`
 - `"servo_pin": 18` (SG90 sinyal pini)
 
-Baglanti:
+Bağlantı:
 - Servo sinyal -> `GPIO18`
 - Servo V+ -> harici 5V
 - Servo GND -> GND
-- Pi GND ile servo besleme GND ortak olmali
+- Pi GND ile servo besleme GND ortak olmalı
 
 Busy detector:
-- `busy_window_sec` ile asistanin "mesgul" kabul ettigi sure ayarlanir.
-- Mesgulken proaktif "yardim ister misin?" sorusu ertelenir.
+- `busy_window_sec` ile asistanın "meşgul" kabul edildiği süre ayarlanır.
+- Meşgulken proaktif "yardım ister misin?" sorusu ertelenir.
 
 ## Stable Diffusion
 
@@ -69,7 +70,7 @@ cd /home/mowits/Downloads/fok_modular
 ./install_pc_sd.sh
 ```
 
-Uretim:
+Üretim:
 
 ```bash
 cd /home/mowits/Downloads/fok_modular
@@ -80,23 +81,23 @@ Log:
 - `/tmp/fok_sd.log`
 
 Notlar:
-- SD calisirken VRAM bosaltmak icin LM Studio otomatik kapatilabilir.
-- Cikti dosyalari `outputs/sd/` altina kaydedilir.
+- SD çalışırken VRAM boşaltmak için LM Studio otomatik olarak kapatılabilir.
+- Çıktı dosyaları `outputs/sd/` altına kaydedilir.
 
-## Gelistirme
+## Geliştirme
 
-Katki ve guvenlik:
+Katkı ve güvenlik:
 - `CONTRIBUTING.md`
 - `SECURITY.md`
 
 ## 🧠 Yerel LLM Desteği
 
-FOK, **yerel büyük dil modelleri (LLM)** ile çalışabilir. Bu sayede asistan tamamen **offline (internetsiz)** olarak da kullanılabilir.
+FOK, **yerel büyük dil modelleri (LLM)** ile çalışabilir. Bu sayede asistan tamamen **çevrim dışı (internetsiz)** olarak da kullanılabilir.
 
-Kullanıcı istediği çalışma şeklini seçebilir:
+Kullanıcı istediği çalışma biçimini seçebilir:
 
-- **Offline modu ("mağara modu")** – tüm işlemler yerel olarak çalışır, internet kullanılmaz.
-- **Online modu** – gerektiğinde internetten bilgi çekebilir.
+- **Çevrim dışı mod ("mağara modu")** – tüm işlemler yerel olarak çalışır, internet kullanılmaz.
+- **Çevrim içi mod** – gerektiğinde internetten bilgi çekebilir.
 
 Bu sayede kullanıcı **gizlilik** ile **güncel bilgi** arasında istediği dengeyi kurabilir.
 

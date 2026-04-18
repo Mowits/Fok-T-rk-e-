@@ -1,6 +1,6 @@
 ## Katkıda Bulunma (Contributing)
 
-FOK Modular projesine katkıda bulunduğunuz için teşekkürler.
+FOK Modular projesine katkıda bulunduğunuz için teşekkür ederiz.
 
 ### Geliştirme Kurulumu
 
@@ -52,7 +52,7 @@ Eğer Stable Diffusion yollarını değiştirdiyseniz ayrıca şunu da doğrulay
 tail -n 50 /tmp/fok_sd.log
 ```
 
-### Pull Request
+### Pull Request Süreci
 
 * Açık ve anlaşılır commit mesajları kullanın.
 * Davranış değişikliklerini ve yapılan tercihlerin nedenlerini açıklayın.

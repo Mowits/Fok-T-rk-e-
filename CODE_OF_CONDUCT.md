@@ -2,10 +2,10 @@
 
 Bu proje basit bir standardı takip eder:
 
-* saygılı olun
-* yapıcı olun
-* teknik açıklık ve netliğe odaklanın
+* Saygılı olun.
+* Yapıcı olun.
+* Teknik açıklık ve netliğe odaklanın.
 
-Kabul edilemez davranışlar şunları içerir: taciz, nefret söylemi ve kişisel saldırılar.
+Kabul edilemez davranışlara taciz, nefret söylemi ve kişisel saldırılar dahildir.
 
-Bu kuralları ihlal eden içerikler veya katkıda bulunan kişiler proje yöneticileri tarafından kaldırılabilir.
+Bu kuralları ihlal eden içerikler veya katkıda bulunan kişiler, proje yöneticileri tarafından kaldırılabilir.

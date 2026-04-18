@@ -1,47 +1,47 @@
-# Surum v0.2.0
+# Sürüm v0.2.0
 
-## One Cikanlar
+## Öne Çıkanlar
 
-- `Claude 3.5 Sonnet` icin OpenRouter destegi eklendi
+- `Claude 3.5 Sonnet` için OpenRouter desteği eklendi
 - OpenAI ses zinciri eklendi:
   - STT: `gpt-4o-transcribe`
   - TTS: `gpt-4o-mini-tts`
-- `run_pi_all.sh` ile Pi-only calisma modu eklendi
-- Elle komut gondermek icin masaustu mesaj kutusu eklendi
-- Web'e bakma karari daha akilli hale getirildi
-- Hava durumu icin dogrudan veri cekme yolu eklendi
-- Busy detector ve proaktif yardim sinirlama eklendi
-- Yuz takibi ve servo destegi eklendi
-- Kisi gorulunce ilac durumunu hatirlatma mantigi eklendi
-- PC/Pi ses yonlendirme ve mikrofon secimi iyilestirildi
-- Duz motor test araclari eklendi
+- `run_pi_all.sh` ile yalnızca Pi üzerinde çalışma modu eklendi
+- Elle komut göndermek için masaüstü mesaj kutusu eklendi
+- Web'e bakma kararı daha akıllı hâle getirildi
+- Hava durumu için doğrudan veri çekme yolu eklendi
+- Meşguliyet algılama ve proaktif yardım sınırlaması eklendi
+- Yüz takibi ve servo desteği eklendi
+- Kişi görülünce ilaç durumunu hatırlatma mantığı eklendi
+- PC/Pi ses yönlendirme ve mikrofon seçimi iyileştirildi
+- Düz motor test araçları eklendi
 
-## Ana Teknik Degisiklikler
+## Ana Teknik Değişiklikler
 
 - `fok/llm.py`
-  - OpenRouter saglayicisi
-  - saglayici fallback sirasi
-  - LLM tabanli web/no-web karari
+  - OpenRouter sağlayıcısı
+  - sağlayıcı fallback sırası
+  - LLM tabanlı web/no-web kararı
 - `fok/web_search.py`
   - sorgu normalizasyonu
-  - hava durumu icin ozel veri yolu
+  - hava durumu için özel veri yolu
   - Open-Meteo fallback
 - `fok/behavior.py`
-  - web karar akisi
-  - dogrudan hava durumu cevabi
-  - face reminder ve busy mantigi
+  - web karar akışı
+  - doğrudan hava durumu cevabı
+  - yüz hatırlatma ve meşguliyet mantığı
 - `fok_pc_whisper_stt.py`
   - OpenAI transcription yolu
-  - ses RMS debug loglari
-  - ayarlanabilir chunk ve threshold degerleri
+  - ses RMS hata ayıklama logları
+  - ayarlanabilir chunk ve eşik değerleri
 - `run_all_pc_pi.sh`
-  - daha saglam PC/Pi orkestrasyonu
-  - ayarlanabilir Pi source yonlendirmesi
+  - daha sağlam PC/Pi orkestrasyonu
+  - ayarlanabilir Pi source yönlendirmesi
 - `run_pi_mic_stream.sh`
-  - auto/manual source secimi
-  - PipeWire/Pulse source destegi
+  - otomatik / manuel source seçimi
+  - PipeWire/Pulse source desteği
 
 ## Notlar
 
-- API key'ler ortam degiskenlerinden okunur; repoda tutulmaz.
-- Yanlislikla olusan yerel dosyalar ve runtime artifaktlari surum kontrolune alinmamistir.
+- API anahtarları ortam değişkenlerinden okunur; repoda tutulmaz.
+- Yanlışlıkla oluşan yerel dosyalar ve çalışma zamanı artifaktları sürüm kontrolüne alınmamıştır.
