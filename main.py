@@ -3,6 +3,7 @@ import os
 import queue
 
 from fok.behavior import run_loop
+from fok.busy import BusyDetector
 from fok.config import load_config, resolve_db_path
 from fok.db import init_db
 from fok.stt import start_remote_stt_server, try_init_whisper
@@ -11,8 +12,9 @@ from fok.vision import try_init_face, try_init_emotion
 
 def main():
     base = os.path.dirname(__file__)
-    cfg = load_config(os.path.join(base, "config.json"))
-    db_path = resolve_db_path(os.path.join(base, "config.json"), cfg)
+    cfg_path = os.environ.get("FOK_CONFIG", os.path.join(base, "config.json"))
+    cfg = load_config(cfg_path)
+    db_path = resolve_db_path(cfg_path, cfg)
     conn = init_db(db_path)
 
     text_queue = queue.Queue()
@@ -26,6 +28,7 @@ def main():
     face_ctx = try_init_face(cfg)
     face_fn = face_ctx["identify"] if face_ctx else None
     face_add = face_ctx["add"] if face_ctx else None
+    face_track = face_ctx.get("track") if face_ctx else None
     if cfg.get("face_enabled", False) and not face_fn:
         print("[FACE] Yuz algilama baslatilamadi. OpenCV/face_recognition ve faces_dir gerekli.")
 
@@ -40,7 +43,8 @@ def main():
         stt_fn=stt_fn,
         face_fn=face_fn,
         face_add=face_add,
-        busy_detector=None,
+        face_track_fn=face_track,
+        busy_detector=BusyDetector(float(cfg.get("busy_window_sec", 45))),
     )
 
 

@@ -5,7 +5,7 @@ TEXT="${1:-}"
 MODEL="${FOK_PC_PIPER_MODEL:-$HOME/piper_pc/tr_TR-dfki-medium.onnx}"
 PI_HOST="${FOK_PI_HOST:-192.168.1.111}"
 PI_USER="${FOK_PI_USER:-mowits}"
-PI_KEY="${FOK_PI_KEY:-/home/mowits/Downloads/fok_pi_key}"
+PI_KEY="${FOK_PI_KEY:-/home/mowits/fok_pi_key}"
 PIPER_BIN="${FOK_PC_PIPER_BIN:-$HOME/piper_bin/piper/piper}"
 
 if [ ! -x "$PIPER_BIN" ]; then

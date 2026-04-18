@@ -43,6 +43,23 @@ Ornekler:
 - `fok gorsel: kirmizi spor araba`
 - `fok gorsel olustur kirmizi spor araba`
 
+## Yuz Tanima + Servo Takip
+
+`config.json` icinde:
+- `"face_enabled": true`
+- `"servo_tracking_enabled": true`
+- `"servo_pin": 18` (SG90 sinyal pini)
+
+Baglanti:
+- Servo sinyal -> `GPIO18`
+- Servo V+ -> harici 5V
+- Servo GND -> GND
+- Pi GND ile servo besleme GND ortak olmali
+
+Busy detector:
+- `busy_window_sec` ile asistanin "mesgul" kabul ettigi sure ayarlanir.
+- Mesgulken proaktif "yardim ister misin?" sorusu ertelenir.
+
 ## Stable Diffusion
 
 Kurulum:

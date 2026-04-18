@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd "$(dirname "$0")"
+BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$BASE_DIR"
 
 ACTION="${1:-start}"
 SD_PROMPT="${2:-}"
 
 FOK_PI_HOST="${FOK_PI_HOST:-192.168.1.111}"
 FOK_PI_USER="${FOK_PI_USER:-mowits}"
-FOK_PI_KEY="${FOK_PI_KEY:-/home/mowits/Downloads/fok_pi_key}"
+FOK_PI_KEY="${FOK_PI_KEY:-/home/mowits/fok_pi_key}"
+FOK_PI_SOURCE_MODE="${FOK_PI_SOURCE_MODE:-manual}"
+FOK_PI_SOURCE="${FOK_PI_SOURCE:-alsa_input.usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-02.analog-stereo}"
 
 detect_pc_ip() {
   ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src"){print $(i+1); exit}}'
@@ -20,8 +23,13 @@ FOK_PC_HOST="${FOK_PC_HOST:-${PC_IP_DEFAULT:-192.168.1.101}}"
 PC_STACK_LOG="${FOK_PC_STACK_LOG:-/tmp/fok_pc_stack.log}"
 PC_WHISPER_LOG="${FOK_PC_WHISPER_LOG:-/tmp/fok_pc_whisper.log}"
 PC_PHONE_LOG="${FOK_PC_PHONE_LOG:-/tmp/fok_phone_bridge.log}"
+PC_HTTP_LOG="${FOK_PC_HTTP_LOG:-/tmp/fok_http_gateway.log}"
 PI_LOG="${FOK_PI_LOG:-/tmp/fok_pi_mic_stream.log}"
 FOK_ENABLE_PHONE_BRIDGE="${FOK_ENABLE_PHONE_BRIDGE:-1}"
+FOK_PUBLIC_TCP="${FOK_PUBLIC_TCP:-1}"
+FOK_PUBLIC_TCP_PORT="${FOK_PUBLIC_TCP_PORT:-8766}"
+FOK_HTTP_GATEWAY="${FOK_HTTP_GATEWAY:-1}"
+FOK_HTTP_PORT="${FOK_HTTP_PORT:-8877}"
 
 SSH_BASE=(ssh -i "$FOK_PI_KEY" -o StrictHostKeyChecking=no "${FOK_PI_USER}@${FOK_PI_HOST}")
 
@@ -31,27 +39,36 @@ ssh_try() {
 }
 
 start_pi_remote() {
-  "${SSH_BASE[@]}" bash -s -- "$FOK_PC_HOST" "$PI_LOG" <<'EOS'
+  "${SSH_BASE[@]}" bash -s -- "$FOK_PC_HOST" "$PI_LOG" "$FOK_PI_SOURCE_MODE" "$FOK_PI_SOURCE" <<'EOS'
 set -e
 PC_HOST="$1"
 PI_LOG="$2"
-chmod +x /home/mowits/run_pi_mic_stream.sh >/dev/null 2>&1 || true
+PI_SOURCE_MODE="$3"
+PI_SOURCE="$4"
+chmod +x /home/mowits/Downloads/fok_modular/run_pi_mic_stream.sh >/dev/null 2>&1 || true
 pkill -f 'run_pi_mic_stream.sh|arecord -D' >/dev/null 2>&1 || true
-nohup env FOK_PC_HOST="$PC_HOST" /home/mowits/run_pi_mic_stream.sh >"$PI_LOG" 2>&1 </dev/null &
+nohup env FOK_PC_HOST="$PC_HOST" FOK_PI_SOURCE_MODE="$PI_SOURCE_MODE" FOK_PI_SOURCE="$PI_SOURCE" /home/mowits/Downloads/fok_modular/run_pi_mic_stream.sh >"$PI_LOG" 2>&1 </dev/null &
 sleep 1
-ps -ef | grep -E 'run_pi_mic_stream.sh|arecord -D' | grep -v grep || true
+ps -ef | grep -E 'run_pi_mic_stream.sh|arecord -D|parec ' | grep -v grep || true
 EOS
 }
 
 start_all() {
   echo "[START] PC stack basliyor..."
-  pkill -f 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py' >/dev/null 2>&1 || true
+  pkill -f 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py|fok_text_box.py' >/dev/null 2>&1 || true
 
-  nohup bash -lc "cd /home/mowits/Downloads/fok_modular && PYTHONUNBUFFERED=1 ./run_pc_stack_pc_piper.sh" >"$PC_STACK_LOG" 2>&1 &
-  nohup bash -lc "cd /home/mowits/Downloads/fok_modular && source .venv_whisper/bin/activate && PYTHONUNBUFFERED=1 ./run_pc_whisper_stt.sh" >"$PC_WHISPER_LOG" 2>&1 &
+  nohup bash -lc "cd '$BASE_DIR' && PYTHONUNBUFFERED=1 ./run_pc_stack_pc_piper.sh" >"$PC_STACK_LOG" 2>&1 &
+  nohup bash -lc "cd '$BASE_DIR' && source .venv_whisper/bin/activate && PYTHONUNBUFFERED=1 ./run_pc_whisper_stt.sh" >"$PC_WHISPER_LOG" 2>&1 &
   if [[ "$FOK_ENABLE_PHONE_BRIDGE" == "1" ]]; then
-    nohup bash -lc "cd /home/mowits/Downloads/fok_modular && PYTHONUNBUFFERED=1 python3 phone_bridge_server.py" >"$PC_PHONE_LOG" 2>&1 &
+    nohup bash -lc "cd '$BASE_DIR' && PYTHONUNBUFFERED=1 python3 phone_bridge_server.py" >"$PC_PHONE_LOG" 2>&1 &
     echo "[START] Phone bridge: http://${FOK_PC_HOST}:8770"
+  fi
+  if [[ "$FOK_HTTP_GATEWAY" == "1" ]]; then
+    nohup bash -lc "cd '$BASE_DIR' && PYTHONUNBUFFERED=1 python3 fok_http_gateway.py" >"$PC_HTTP_LOG" 2>&1 &
+    echo "[START] HTTP gateway: http://${FOK_PC_HOST}:${FOK_HTTP_PORT}/text"
+  fi
+  if [[ "$FOK_PUBLIC_TCP" == "1" ]]; then
+    echo "[START] Public TCP (remote STT ingest): 0.0.0.0:${FOK_PUBLIC_TCP_PORT}"
   fi
 
   sleep 2
@@ -68,7 +85,7 @@ start_all() {
 
 stop_all() {
   echo "[STOP] PC prosesleri durduruluyor..."
-  pkill -f 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py' >/dev/null 2>&1 || true
+  pkill -f 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py|fok_text_box.py' >/dev/null 2>&1 || true
 
   echo "[STOP] Pi prosesleri durduruluyor..."
   if ! ssh_try "pkill -f 'run_pi_mic_stream.sh|arecord -D' >/dev/null 2>&1 || true"; then
@@ -80,7 +97,7 @@ stop_all() {
 
 status_all() {
   echo "=== PC ==="
-  pgrep -af 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py' || echo "PC: calisan proses yok"
+  pgrep -af 'run_pc_stack_pc_piper.sh|main.py|fok_pc_whisper_stt.py|fok_pi_agent.py|phone_bridge_server.py|fok_text_box.py' || echo "PC: calisan proses yok"
 
   echo "=== PI (${FOK_PI_HOST}) ==="
   if ! ssh_try "ps -ef | grep -E 'run_pi_mic_stream.sh|arecord -D' | grep -v grep || echo 'PI: calisan proses yok'"; then
@@ -97,6 +114,9 @@ logs_all() {
   echo
   echo "=== PC phone log ($PC_PHONE_LOG) ==="
   tail -n 40 "$PC_PHONE_LOG" || true
+  echo
+  echo "=== PC http log ($PC_HTTP_LOG) ==="
+  tail -n 40 "$PC_HTTP_LOG" || true
   echo
   echo "=== PI log ($PI_LOG) ==="
   if ! ssh_try "tail -n 40 '$PI_LOG' || true"; then
@@ -137,7 +157,7 @@ run_sd_once() {
     return 0
   fi
   echo "[SD] Uretim basliyor..."
-  nohup bash -lc "cd /home/mowits/Downloads/fok_modular && ./run_sd.sh \"$prompt\"" >/tmp/fok_sd.log 2>&1 &
+  nohup bash -lc "cd '$BASE_DIR' && ./run_sd.sh \"$prompt\"" >/tmp/fok_sd.log 2>&1 &
   echo "[SD] Baslatildi. Log: /tmp/fok_sd.log"
 }
 

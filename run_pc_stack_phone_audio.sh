@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 python3 phone_bridge_server.py &
 PHONE_PID=$!
 
-FOK_TTS_CMD="$(pwd)/tts_phone_bridge.sh" python3 /home/mowits/Downloads/fok_pi_agent.py &
+FOK_TTS_CMD="$(pwd)/tts_phone_bridge.sh" python3 "$(pwd)/fok_pi_agent.py" &
 AGENT_PID=$!
 
 cleanup() {

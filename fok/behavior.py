@@ -4,12 +4,18 @@ import time
 from datetime import datetime
 
 from .empathy import empathic_response
-from .llm import lm_studio_response, openai_response
+from .llm import best_available_response, llm_decides_web
 from .memory import save_memory, get_profile_note, set_profile_note
-from .meds import add_or_update_med, disable_med, fetch_due_meds, mark_med_done_today
+from .meds import (
+    add_or_update_med,
+    disable_med,
+    fetch_due_meds,
+    mark_med_done_today,
+    fetch_user_active_meds,
+)
 from .pi_bridge import send_pi_command
 from .reminders import add_reminder, fetch_due_reminders, mark_reminder_done
-from .web_search import normalize_web_query, web_search, wants_web
+from .web_search import normalize_query_text, normalize_web_query, weather_lookup, web_search, wants_web
 
 
 def parse_reminder_command(text: str):
@@ -239,8 +245,18 @@ def handle_text(
     profile = get_profile_note(conn, user)
 
     # Online / offline cevaplama
-    if wants_web(cfg, text):
+    heuristic_web_needed = wants_web(cfg, text)
+    web_needed = llm_decides_web(cfg, user, text, profile)
+    if heuristic_web_needed:
+        web_needed = True
+    elif web_needed is None:
+        web_needed = False
+
+    if web_needed:
         query = normalize_web_query(cfg, text)
+        weather_data = weather_lookup(query) if ("hava" in query or "weather" in query) else None
+        if weather_data:
+            return weather_data["summary"], pending_state
         results = web_search(query, max_results=int(cfg.get("web_max_results", 3)))
         if results:
             lines = []
@@ -253,16 +269,13 @@ def handle_text(
                     lines.append(f"{i}. Title: {title}")
             web_evidence = "\n".join(lines)
             prompt = (
-                "Below are web search findings. "
-                "Use only these findings and answer in concise, clear English. "
-                "Do not output links or source lists.\n\n"
-                f"User question: {query}\n\n"
-                f"Web findings:\n{web_evidence}"
+                "Asagida web arama bulgulari var. "
+                "Yalnizca bu bulgulara dayanarak kisa ve net Turkce cevap ver. "
+                "Link veya kaynak listesi yazma.\n\n"
+                f"Kullanici sorusu: {query}\n\n"
+                f"Web bulgulari:\n{web_evidence}"
             )
-            response = (
-                openai_response(cfg, user, prompt, profile)
-                or lm_studio_response(cfg, user, prompt, profile)
-            )
+            response = best_available_response(cfg, user, prompt, profile)
             if not response:
                 snippets = [item.get("snippet", "").strip() for item in results if item.get("snippet", "").strip()]
                 if snippets:
@@ -273,10 +286,7 @@ def handle_text(
         else:
             response = "Web search failed. Please check internet connectivity."
     else:
-        response = (
-            openai_response(cfg, user, text, profile)
-            or lm_studio_response(cfg, user, text, profile)
-        )
+        response = best_available_response(cfg, user, text, profile)
 
     if not response:
         response = empathic_response(user, text)
@@ -290,6 +300,7 @@ def run_loop(
     stt_fn=None,
     face_fn=None,
     face_add=None,
+    face_track_fn=None,
     busy_detector=None,
 ):
     wake_word = cfg.get("wake_word", "fok").lower()
@@ -305,9 +316,11 @@ def run_loop(
     last_reminder_check = 0.0
     last_med_check = 0.0
     last_face_check = 0.0
+    last_face_track = 0.0
     last_face_name = None
     last_face_greet = 0.0
     last_help_offer = 0.0
+    last_face_med_reminder = 0.0
     pending_state = {"med_confirm": None, "image_prompt_waiting": False}
     tts_guard_until = 0.0
     last_spoken_text = ""
@@ -332,12 +345,30 @@ def run_loop(
             t = t.replace(w, "")
         return t.strip()
 
+    def is_busy_now() -> bool:
+        if not busy_detector:
+            return False
+        try:
+            if callable(busy_detector):
+                return bool(busy_detector())
+            if hasattr(busy_detector, "is_busy"):
+                return bool(busy_detector.is_busy())
+        except Exception:
+            return False
+        return False
+
     def say(text: str):
         nonlocal tts_guard_until, last_spoken_text
         print("FOK:", text)
         last_spoken_text = (text or "").lower()
         # Hoparlorden cikan TTS'nin tekrar mikrofondan STT'ye dusmesini azalt.
-        tts_guard_until = time.time() + min(60.0, max(6.0, len(last_spoken_text) / 10.0))
+        guard_sec = min(60.0, max(6.0, len(last_spoken_text) / 10.0))
+        tts_guard_until = time.time() + guard_sec
+        if busy_detector and hasattr(busy_detector, "mark_busy_for"):
+            try:
+                busy_detector.mark_busy_for(guard_sec)
+            except Exception:
+                pass
         try:
             send_pi_command(cfg["pi_host"], cfg["pi_port"], {"cmd": "speak", "text": text})
         except Exception as e:
@@ -370,6 +401,13 @@ def run_loop(
                         mark_med_done_today(conn, mid, now_local)
 
             # Kisi tanima
+            if face_track_fn and (now - last_face_track >= cfg.get("face_track_interval", 0.25)):
+                last_face_track = now
+                try:
+                    face_track_fn()
+                except Exception:
+                    pass
+
             if face_fn and (now - last_face_check >= cfg.get("face_check_seconds", 5)):
                 last_face_check = now
                 name = face_fn()
@@ -381,9 +419,28 @@ def run_loop(
                     print("[FACE] Detected:", name)
                     say(greet)
 
+                # Yuz goruldugunde kisiye ilac listesini hatirlat (opsiyonel)
+                if (
+                    name
+                    and cfg.get("face_med_reminder_on_recognition", True)
+                    and (now - last_face_med_reminder >= cfg.get("face_med_reminder_cooldown", 120))
+                ):
+                    meds = fetch_user_active_meds(conn, name)
+                    if meds:
+                        today = datetime.now().strftime("%Y-%m-%d")
+                        pending = []
+                        for med_name, hm, last_date in meds:
+                            status = "alinmadi" if last_date != today else "alindi"
+                            pending.append(f"{med_name} ({hm}, {status})")
+                        med_text = ", ".join(pending[:3])
+                        if len(pending) > 3:
+                            med_text += ", ve digerleri"
+                        say(f"{name}, ilac durumun: {med_text}.")
+                        last_face_med_reminder = now
+
                 # Yardim teklif etme (busy degilse ve bir sure etkinlik yoksa)
                 if name and (now - last_help_offer >= 120):
-                    if not busy_detector or not busy_detector():
+                    if not is_busy_now():
                         say("Do you want any help?")
                         last_help_offer = now
 
@@ -401,6 +458,11 @@ def run_loop(
 
             if not text:
                 continue
+            if busy_detector and hasattr(busy_detector, "mark_activity"):
+                try:
+                    busy_detector.mark_activity()
+                except Exception:
+                    pass
             if text.lower() in {"cikis", "exit", "quit"}:
                 break
 
@@ -419,13 +481,13 @@ def run_loop(
             if wake_detected:
                 wake_session_active = True
                 wake_last_activity = now_talk
-                cleaned = strip_wake(text.lower())
+                cleaned = normalize_query_text(strip_wake(text.lower()))
                 if not cleaned:
                     # Sadece wake denildiyse komut bekleme moduna gir.
                     print("[Wake] Voice session opened.")
                     continue
             elif wake_session_active:
-                cleaned = text.lower().strip()
+                cleaned = normalize_query_text(text.lower().strip())
                 wake_last_activity = now_talk
             else:
                 print("[Sleep] Wake word not detected.")

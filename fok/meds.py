@@ -55,3 +55,17 @@ def mark_med_done_today(conn, med_id: int, now_local: datetime) -> None:
         (today, med_id),
     )
     conn.commit()
+
+
+def fetch_user_active_meds(conn, user: str):
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT name, time_hm, last_date
+        FROM med_routines
+        WHERE enabled = 1 AND user = ?
+        ORDER BY time_hm ASC, name ASC
+        """,
+        (user,),
+    )
+    return cur.fetchall()

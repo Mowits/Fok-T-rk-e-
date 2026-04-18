@@ -1,5 +1,7 @@
 import os
 
+from .servo import try_init_servo_tracker
+
 
 def try_init_face(cfg: dict):
     if not cfg.get("face_enabled", False):
@@ -19,6 +21,10 @@ def try_init_face(cfg: dict):
     if not cap.isOpened():
         return None
 
+    servo_tracker = try_init_servo_tracker(cfg)
+    tolerance = float(cfg.get("face_recognition_tolerance", 0.5))
+    track_unknown = bool(cfg.get("face_track_unknown", True))
+
     known_encodings = []
     known_names = []
     for fname in os.listdir(faces_dir):
@@ -34,6 +40,14 @@ def try_init_face(cfg: dict):
         except Exception:
             continue
 
+    def _track_from_locs(locs, frame_w):
+        if not locs:
+            return
+        # Largest face by area
+        top, right, bottom, left = max(locs, key=lambda l: max(0, (l[2] - l[0])) * max(0, (l[1] - l[3])))
+        cx = (left + right) / 2.0
+        servo_tracker.update(cx / max(1.0, float(frame_w)))
+
     def identify_once():
         if not known_encodings:
             return None
@@ -42,13 +56,25 @@ def try_init_face(cfg: dict):
             return None
         rgb = frame[:, :, ::-1]
         locs = face_recognition.face_locations(rgb, model="hog")
+        _track_from_locs(locs, frame.shape[1])
         encs = face_recognition.face_encodings(rgb, locs)
         for enc in encs:
-            matches = face_recognition.compare_faces(known_encodings, enc, tolerance=0.5)
+            matches = face_recognition.compare_faces(known_encodings, enc, tolerance=tolerance)
             if True in matches:
                 idx = matches.index(True)
                 return known_names[idx]
         return None
+
+    def track_once():
+        ret, frame = cap.read()
+        if not ret:
+            return None
+        rgb = frame[:, :, ::-1]
+        locs = face_recognition.face_locations(rgb, model="hog")
+        if locs:
+            _track_from_locs(locs, frame.shape[1])
+            return True
+        return False
 
     def add_face(name: str):
         ret, frame = cap.read()
@@ -70,7 +96,9 @@ def try_init_face(cfg: dict):
         known_names.append(safe)
         return True, safe
 
-    return {"identify": identify_once, "add": add_face}
+    # If unknown tracking is disabled, only track inside identify() when recognition is attempted.
+    track_fn = track_once if track_unknown else None
+    return {"identify": identify_once, "add": add_face, "track": track_fn}
 
 
 def try_init_emotion(cfg: dict):
